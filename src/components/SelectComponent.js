@@ -1,16 +1,8 @@
 import React from "react";
 
-const SelectComponent = ({
-  label,
-  options,
-  value,
-  onChange,
-  selectedOption,
-  errorMessage,
-  error,
-}) => {
+const SelectComponent = ({ label, options, value, onChange, errorMessage }) => {
   return (
-    <div>
+    <div className='form__select'>
       <label htmlFor='dog-input'>{label}</label>
       <select
         value={value}

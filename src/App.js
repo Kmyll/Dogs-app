@@ -71,7 +71,7 @@ function App() {
       const response = await fetch(imgURL);
       if (!response.ok) {
         setError(true);
-        setErrorMessage("Error retrieving images, please try again");
+        setErrorMessage("Please select a breed");
         return;
       }
 
@@ -82,12 +82,12 @@ function App() {
       setErrorMessage("");
     } catch (error) {
       setError(true);
-      setErrorMessage("Error retrieving images, please try again");
+      setErrorMessage("Please select a breed");
     }
   };
 
   return (
-    <div className='App'>
+    <div className='container'>
       <h1>The Dog App</h1>
 
       <form onSubmit={handleSubmitForm}>
@@ -120,7 +120,10 @@ function App() {
         <button type='submit'>View images</button>
       </form>
 
-      {dogImg && dogImg.map((image, index) => <img key={index} src={image} />)}
+      <div className='images__container'>
+        {dogImg &&
+          dogImg.map((image, index) => <img key={index} src={image} />)}
+      </div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function SelectImg({ imageNum, setImageNum, errorMessage }) {
   }
 
   return (
-    <div>
+    <div className='form__select'>
       <label htmlFor='dogs-images-number'>
         Number of images to be displayed
       </label>

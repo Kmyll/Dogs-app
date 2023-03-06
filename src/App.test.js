@@ -29,9 +29,7 @@ describe("App", () => {
     fireEvent.change(breedSelect, { target: { value: "poodle" } });
     const submitBtn = screen.getByRole("button", { name: "View images" });
     fireEvent.click(submitBtn);
-    const errorMsg = await screen.findByText(
-      "Error retrieving images, please try again"
-    );
+    const errorMsg = await screen.findByText("Please select a breed");
     expect(errorMsg).toBeInTheDocument();
   });
 
