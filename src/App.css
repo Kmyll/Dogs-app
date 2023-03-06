@@ -36,3 +36,7 @@
     transform: rotate(360deg);
   }
 }
+
+.selectInput__red {
+  border-color: red;
+}

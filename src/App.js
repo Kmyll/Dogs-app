@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { DOGS_URL } from "./components/API/DogsApi";
+import SelectComponent from "./components/SelectComponent";
+import SelectImg from "./components/SelectImg";
 import "./App.css";
-
-const DOGS_URL = "https://dog.ceo/api/breeds/list/all";
 
 function App() {
   const [ breeds, setBreeds ] = useState([]);
@@ -11,6 +12,9 @@ function App() {
   const [ data, setData ] = useState(null);
   const [ imageNum, setImageNum ] = useState(1);
   const [ dogImg, setDogImg ] = useState([]);
+  const [ selectedOption, setSelectedOption ] = useState("");
+  const [ errorMessage, setErrorMessage ] = useState("");
+  const [ error, setError ] = useState(false);
 
   useEffect(() => {
     fetch(DOGS_URL)
@@ -23,98 +27,100 @@ function App() {
       .catch((error) => console.log(error));
   }, []);
 
-  // select breed
   const handleBreedChange = (event) => {
     const breed = event.target.value;
     setSelectedBreed(breed);
     setSelectedSubBreed("");
     if (breeds.includes(breed)) {
-      const subBreedsList = data.message[breed]; // use the data state variable
-      console.log("subBreedsList", subBreedsList);
+      const subBreedsList = data.message[breed];
       setSubBreeds(subBreedsList);
+      setSelectedOption("");
+      setErrorMessage("");
+      setError(false);
     } else {
       setSubBreeds([]);
     }
   };
 
-  //select sub-breed
   const handleSubBreedChange = (event) => {
     const subBreeds = event.target.value;
     setSelectedSubBreed(subBreeds);
+    setSelectedOption(subBreeds);
+    setErrorMessage("");
+    setError(false);
   };
 
-  // number of selected pictures
-  const handleNumberChange = (event) => {
-    setImageNum(parseInt(event.target.value));
-  };
-
-  const numberOptions = [];
-  for (let i = 1; i <= 10; i++) {
-    numberOptions.push(
-      <option key={i} value={i}>
-        {i}
-      </option>
-    );
-  }
-
-  const handleSubmitForm = (e) => {
+  const handleSubmitForm = async (e) => {
     e.preventDefault();
-    let IMG_URL = `https://dog.ceo/api`;
-    if (selectedSubBreed) {
-      IMG_URL += `/breed/${selectedBreed}/${selectedSubBreed}/images`;
-    } else if (selectedBreed) {
-      IMG_URL += `/breed/${selectedBreed}/images`;
-    } else {
-      IMG_URL += `/breeds/list/all`;
+
+    if (!selectedOption) {
+      setError(true);
+      setErrorMessage("Please select an option");
     }
 
-    fetch(IMG_URL)
-      .then((res) => res.json())
-      .then((data) => {
-        const sliceData = data.message.slice(0, imageNum);
-        setDogImg(sliceData);
-      })
-      .catch((error) => console.log(error));
+    try {
+      let imgURL = `https://dog.ceo/api`;
+      if (selectedSubBreed) {
+        imgURL += `/breed/${selectedBreed}/${selectedSubBreed}/images`;
+      } else if (selectedBreed) {
+        imgURL += `/breed/${selectedBreed}/images`;
+      } else {
+        imgURL += `/breeds/list/all`;
+      }
+
+      const response = await fetch(imgURL);
+      if (!response.ok) {
+        setError(true);
+        setErrorMessage("Error retrieving images, please try again");
+        return;
+      }
+
+      const data = await response.json();
+      const slicedData = data.message.slice(0, imageNum);
+      setDogImg(slicedData);
+      setError(false);
+      setErrorMessage("");
+    } catch (error) {
+      setError(true);
+      setErrorMessage("Error retrieving images, please try again");
+    }
   };
 
-  console.log("dogImg", dogImg);
   return (
     <div className='App'>
       <h1>The Dog App</h1>
+
       <form onSubmit={handleSubmitForm}>
-        <label>Dog breed</label>
-        <select value={selectedBreed} onChange={handleBreedChange}>
-          <option value='option1'>Select an option</option>
-          {breeds.map((breed, index) => (
-            <option key={index} value={breed}>
-              {breed}
-            </option>
-          ))}
-        </select>
-
+        <SelectComponent
+          label='Dog breed'
+          options={breeds}
+          value={selectedBreed}
+          selectedOption={selectedOption}
+          errorMessage={errorMessage}
+          error={error}
+          onChange={handleBreedChange}
+        />
         {subBreeds.length > 0 && (
-          <div>
-            <label>Dog sub-breed</label>
-            <select value={selectedSubBreed} onChange={handleSubBreedChange}>
-              <option value='option1'>Select an option</option>
-              {subBreeds.map((subBreed, index) => (
-                <option key={index} value={subBreed}>
-                  {subBreed}
-                </option>
-              ))}
-            </select>
-          </div>
+          <SelectComponent
+            label='Dog sub-breed'
+            options={subBreeds}
+            value={selectedSubBreed}
+            selectedOption={selectedOption}
+            errorMessage={errorMessage}
+            error={error}
+            onChange={handleSubBreedChange}
+          />
         )}
-
-        <label>Number of images to be displayed</label>
-        <select value={imageNum} onChange={handleNumberChange}>
-          {numberOptions}
-        </select>
-
+        <SelectImg
+          imageNum={imageNum}
+          setImageNum={setImageNum}
+          error={error}
+          selectedOption={selectedOption}
+        />
         <button type='submit'>View images</button>
       </form>
-      // loop
-      {dogImg && dogImg.map((image) => <img src={image} />)}
+
+      {dogImg && dogImg.map((image, index) => <img key={index} src={image} />)}
     </div>
   );
 }
